@@ -1,0 +1,98 @@
+Implemented Continuous Integration using AWS CodeBuild and CodePipeline
+
+Project Summary:
+
+Developed a lightweight Flask web application and implemented a fully automated Continuous Integration (CI) pipeline using AWS CodePipeline and CodeBuild, with source code hosted on GitHub and container images stored on Docker Hub. The pipeline automatically builds, tests, containerizes, and pushes the Docker image whenever code is committed, ensuring reliable and repeatable deployments.
+ 
+
+-------------------PHASE1: Build and test flask app locally-------------------------
+Step1: create folder named flask in your repo and add files app.py and requirements.txt
+ 
+ 
+Step2: launch ec2 instance enable port 6000 and ssh in security group inbound traffic and login to your instance from terminal and clone your repo
+ 
+•	Login to ec2 from mobaxterm or git or any cmd and connect to ec2
+
+ssh -i flask.pem ubuntu@15.207.55.33
+
+step3: install all dependencies and requirements to run flask app
+
+ssh-keygen -t rsa -b 4096 
+cat ~/.ssh/id_rsa.pub   #copy key and paste in github ssh key
+git clone git@github.com:Divyashree-LB/aws_cicd.git
+cd aws_cicd/flask_app
+sudo apt update
+sudo apt install python3-pip
+sudo apt install python3-venv -y
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python3 app.py
+
+ 
+
+Open browser http://15.207.55.33:6000/   where as., http://<ec2 pblic ip>:6000/ 
+
+ 
+•	Install docker on ec2,build and push image to dockerhub
+	Install docker.io
+sudo apt update
+sudo apt install docker.io
+sudo usermod -aG docker ubuntu
+sudo systemctl enable docker
+sudo systemctl start docker
+sudo systemctl restart docker
+sudo systemctl status docker
+	Write Docker file,create,build the image
+          docker build -t divyashree1129/flask_service .
+          docker run -d -p 8000:8000 divyashree1129/flask_service:latest
+ 
+	Login to Dockerhub and push image to repo
+docker login -u divyashree1129
+password: 
+docker push divyashree1129/flask_service:latest
+ 
+ 
+
+----------------------------Phase2: Continuous integration--------------------------
+Step1: create a role in IAM 
+IAM -> roles -> select aws service -> next -> create role -> give name -> grant SSMfullAccess permission -> create
+ 
+Step2: system manager -> parameter store -> add your docker credentials and save
+ 
+Step3:  create project in codebuild
+Search CodeBuild -> build project -> create project -> add all details as below snaps -> create project
+ 
+OAuth to your git repo and connect 
+ 
+Select ubuntu os and below os specification
+ 
+Build your own specification or extract build.yml from repo  
+Select the service we created in step1 from service role permission dropdown
+  
+
+
+Build the project,check and debug logs for failure
+ 
+Step4: create codepipeline 
+Codepipeline -> create new pipeline -> custom pipeline -> provide name and select role created in step1 -> connect to git hub -> select codebuild and your project ->skip deploy ->create pipeline
+	pipeline triggers all the stages and build automatically
+
+ 
+
+
+Make code changes in git and commit,pipeline get auto-triggered and changes reflects
+Pipeline acts as web-trigger 
+•	soon we made commit in github, CodePipeline auto-triggered and status changed to progress
+ 
+
+Build is success 
+ 
+
+
+Docker image pushed to docker hub
+ 
+
+
+
+
