@@ -1,0 +1,33 @@
+version: 0.2
+
+env:
+  parameter-store:
+    DOCKER_REGISTRY_USERNAME: /flask/docker-cred/username
+    DOCKER_REGISTRY_PASSWORD: /flask/docker-cred/password
+    DOCKER_REGISTRY_URL: /flask/docker-cred/url
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.12
+    
+  pre_build:
+    commands:
+      - echo "Installing dependencies..."
+      - pip install -r flask_app/requirements.txt
+      
+  build:
+    commands:
+      - echo "Logging into Docker registry..."
+      - echo "$DOCKER_REGISTRY_PASSWORD" | docker login -u "$DOCKER_REGISTRY_USERNAME" --password-stdin "$DOCKER_REGISTRY_URL"
+      
+      - IMAGE_NAME="$DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_USERNAME/flask_service:latest"
+      
+      - echo "Building Docker Image:$IMAGE_NAME"
+      - docker build -t "$IMAGE_NAME" -f flask_app/Dockerfile flask_app
+
+      - echo "Pushing Docker Image..."
+      - docker push "$IMAGE_NAME"
+
+  post_build:
+    commands:
