@@ -23,7 +23,7 @@ phases:
       
       - IMAGE_NAME="$DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_USERNAME/flask_service:latest"
       
-      - echo "Building Docker Image:$IMAGE_NAME"
+      - echo "Building Docker Image: $IMAGE_NAME"
       - docker build -t "$IMAGE_NAME" -f flask_app/Dockerfile flask_app
 
       - echo "Pushing Docker Image..."
@@ -31,3 +31,4 @@ phases:
 
   post_build:
     commands:
+      - echo "🎉 Build & Push Completed Successfully!"
